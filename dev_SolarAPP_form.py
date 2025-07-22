@@ -3,9 +3,11 @@ import networkx as nx
 from elm.base import ApiBase
 from elm.tree import DecisionTree
 from sklearn import tree
+from dotenv import load_dotenv
 
 # Load API key from environment variable
 # ADD KEY HERE
+load_dotenv()
 
 def Equipment_Inverter(**kwargs):
     G = nx.DiGraph(**kwargs)
@@ -19,10 +21,11 @@ def Equipment_Inverter(**kwargs):
         "\nIf there is no list, provide your own answer, but always the short answer first and then the explanation on a separate paragraph"
     )
 
+    ApiBase.MODEL_ROLE = "You are an expert on analyzing Single Line Diagrams (SLD) of residential solar installations."
+
     G.add_node(
         "intro_inverter_type",
         prompt=(
-            "You are an expert on analyzing Single Line Diagrams (SLD) of residential solar installations."
             "I have provided you with a diagram (see attached). I want you to professionally analyze it"
             "and answer the following questions."
             "Use only clear evidence from the diagram and do not make assumptions."
@@ -105,7 +108,7 @@ def main():
     tree = DecisionTree(G)
     # result = tree.run()
     # print(result)
-    out = tree.run()
+    out = tree.run("intro_inverter_type") # Make sure we are starting at that node. 
     print(tree.all_messages_txt)
 
 if __name__ == "__main__":
