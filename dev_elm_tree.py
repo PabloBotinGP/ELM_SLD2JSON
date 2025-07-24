@@ -1,5 +1,6 @@
 import os
 import networkx as nx
+from openai import OpenAI
 from elm.base import ApiBase
 from elm.tree import DecisionTree
 from sklearn import tree
@@ -8,7 +9,15 @@ from dotenv import load_dotenv
 # Load API key from environment variable
 load_dotenv()
 
-def Equipment_Inverter(**kwargs):
+client = OpenAI()
+
+# Upload image using OpenAI Files API
+def upload_image(file_path):
+    with open(file_path, "rb") as f:
+        result = client.files.create(file=f, purpose="vision")
+        return result.id
+
+def Equipment_Inverter(file_id, **kwargs):
     G = nx.DiGraph(**kwargs)
     G.graph["api"] = ApiBase(model="gpt-4o")
 
@@ -25,21 +34,20 @@ def Equipment_Inverter(**kwargs):
     G.add_node(
         "intro_inverter_type",
         prompt=(
-            "I have provided you with a diagram (see attached). I want you to professionally analyze it"
-            "and answer the following questions."
+            f"I have provided you with a diagram (file ID: {file_id}). I want you to professionally analyze it and answer the following questions."
             "Use only clear evidence from the diagram and do not make assumptions."
             "Store your answers internally and provide them as a single JSON file at the end of the decision tree."
-            "What is the architecture type used for all inverters in this project?\n"
-            "Choose only one of the following options based on the ordinance text:\n"
-            "- String Inverter without DC-DC Converters\n"
-            "- String Inverter with DC-DC Converters\n"
-            "- Microinverters\n"
+            "What is the architecture type used for all inverters in this project?"
+            "Choose only one of the following options based on the ordinance text:"
+            "- String Inverter without DC-DC Converters"
+            "- String Inverter with DC-DC Converters"
+            "- Microinverters"
             "- AC Modules"
             + formatting_instructions
-        ),
+        )
     )
 
-    # Microinverter branch.
+
     manufacturer_list_json = [
         "Enphase Energy Inc.",
         "ABB",
@@ -79,7 +87,6 @@ def Equipment_Inverter(**kwargs):
         + formatting_instructions
     ))
 
-    # Final summary node with injected context
     G.add_node("final", prompt=(
         "Here are the answers collected so far:\n"
         "{answers}\n\n"
@@ -87,7 +94,6 @@ def Equipment_Inverter(**kwargs):
         + formatting_instructions
     ))
 
-    # Branch dividers. Only including microinverters for now.
     G.add_edge("intro_inverter_type", "micro_mfr1", condition=lambda x: x.strip().lower().startswith("microinverters"))
     G.add_edge("micro_mfr1", "micro_model1")
     G.add_edge("micro_model1", "micro_ocpd1")
@@ -97,22 +103,25 @@ def Equipment_Inverter(**kwargs):
     return G
 
 def main():
-    G = Equipment_Inverter()
-    tree_runner = DecisionTree(G)
+    image_path = "SA20250410-5395-123-336.png"
+    file_id = upload_image(image_path)
 
+    G = Equipment_Inverter(file_id)
+    tree = DecisionTree(G)
+    
     results = {}
-    result = tree_runner.run("intro_inverter_type")
-    results["inverter_type"] = result
+    result= tree.run("intro_inverter_type")
+    results["inverter_type"] = results
 
     if result.strip().lower().startswith("microinverters"):
-        results["micro_mfr1"] = tree_runner.run("micro_mfr1")
-        results["micro_model1"] = tree_runner.run("micro_model1")
-        results["micro_ocpd1"] = tree_runner.run("micro_ocpd1")
-        results["micro_interconnect1"] = tree_runner.run("micro_interconnect1")
+        results["micro_mfr1"] = tree.run("micro_mfr1")
+        results["micro_model1"] = tree.run("micro_model1")
+        results["micro_ocpd1"] = tree.run("micro_ocpd1")
+        results["micro_interconnect1"] = tree.run("micro_interconnect1")
 
-        tree_runner.run("final", context={"answers": results})
+        tree.run("final", context={"answers": results})
 
-    print(tree_runner.all_messages_txt)
+    print(tree.all_messages_txt)
 
 if __name__ == "__main__":
     main()
