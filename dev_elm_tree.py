@@ -19,8 +19,8 @@ def upload_image(file_path):
 
 def Equipment_Inverter(file_id, **kwargs):
     G = nx.DiGraph(**kwargs)
-    G.graph["api"] = ApiBase(model="gpt-4o")
-    #G.graph["api"] = ApiBase(model="gpt-4.1-mini")
+    #G.graph["api"] = ApiBase(model="gpt-4o")
+    G.graph["api"] = ApiBase(model="gpt-4.1-mini")
 
     formatting_instructions = (
         "\n\nProvide only the selected option as your first sentence."
