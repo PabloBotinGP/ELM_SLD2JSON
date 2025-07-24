@@ -14,12 +14,13 @@ client = OpenAI()
 # Upload image using OpenAI Files API
 def upload_image(file_path):
     with open(file_path, "rb") as f:
-        result = client.files.create(file=f, purpose="vision")
+        result = client.files.create(file=f, purpose="user_data")
         return result.id
 
 def Equipment_Inverter(file_id, **kwargs):
     G = nx.DiGraph(**kwargs)
     G.graph["api"] = ApiBase(model="gpt-4o")
+    #G.graph["api"] = ApiBase(model="gpt-4.1-mini")
 
     formatting_instructions = (
         "\n\nProvide only the selected option as your first sentence."
