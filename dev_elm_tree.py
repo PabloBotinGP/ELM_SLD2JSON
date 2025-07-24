@@ -6,7 +6,6 @@ from sklearn import tree
 from dotenv import load_dotenv
 
 # Load API key from environment variable
-# ADD KEY HERE
 load_dotenv()
 
 def Equipment_Inverter(**kwargs):
@@ -39,6 +38,7 @@ def Equipment_Inverter(**kwargs):
             + formatting_instructions
         ),
     )
+
     # Microinverter branch.
     manufacturer_list_json = [
         "Enphase Energy Inc.",
@@ -78,39 +78,41 @@ def Equipment_Inverter(**kwargs):
         "- Backup Loads Panel"
         + formatting_instructions
     ))
-    # Other branches, not developed yet. 
-    # G.add_node("string_node", prompt="Answer detailed follow-up questions for String Inverter without DC-DC Converters." + formatting_instructions)
-    # G.add_node("dc_dc_node", prompt="Answer detailed follow-up questions for String Inverter with DC-DC Converters." + formatting_instructions)
-    # G.add_node("ac_module_node", prompt="Answer detailed follow-up questions for AC Modules." + formatting_instructions)
 
-    # Branch dividers. Only including microinverters for now. 
-    G.add_edge("inverter_type", "micro_node", condition=lambda x: x.strip().lower().startswith("microinverters"))
-    # G.add_edge("inverter_type", "string_node", condition=lambda x: x.strip().lower().startswith("string inverter without dc"))
-    # G.add_edge("inverter_type", "dc_dc_node", condition=lambda x: x.strip().lower().startswith("string inverter with dc"))
-    # G.add_edge("inverter_type", "ac_module_node", condition=lambda x: x.strip().lower().startswith("ac modules"))
+    # Final summary node with injected context
+    G.add_node("final", prompt=(
+        "Here are the answers collected so far:\n"
+        "{answers}\n\n"
+        "Reformat them as a single JSON object."
+        + formatting_instructions
+    ))
 
-    G.add_edge("micro_node", "micro_mfr1")
+    # Branch dividers. Only including microinverters for now.
+    G.add_edge("intro_inverter_type", "micro_mfr1", condition=lambda x: x.strip().lower().startswith("microinverters"))
     G.add_edge("micro_mfr1", "micro_model1")
     G.add_edge("micro_model1", "micro_ocpd1")
     G.add_edge("micro_ocpd1", "micro_interconnect1")
     G.add_edge("micro_interconnect1", "final")
-    G.add_node("final", prompt="Please output all collected answers as a single JSON file." + formatting_instructions)
-    # Can I do this?? Am I not relying too much on the model's memory? Shouldnt I store the answers while provided? 
-
-    # G.add_edge("string_node", "final")
-    # G.add_edge("dc_dc_node", "final")
-    # G.add_edge("ac_module_node", "final")
 
     return G
 
 def main():
     G = Equipment_Inverter()
-    tree = DecisionTree(G)
-    # result = tree.run()
-    # print(result)
-    out = tree.run("intro_inverter_type") # Make sure we are starting at that node. 
-    print(tree.all_messages_txt)
+    tree_runner = DecisionTree(G)
+
+    results = {}
+    result = tree_runner.run("intro_inverter_type")
+    results["inverter_type"] = result
+
+    if result.strip().lower().startswith("microinverters"):
+        results["micro_mfr1"] = tree_runner.run("micro_mfr1")
+        results["micro_model1"] = tree_runner.run("micro_model1")
+        results["micro_ocpd1"] = tree_runner.run("micro_ocpd1")
+        results["micro_interconnect1"] = tree_runner.run("micro_interconnect1")
+
+        tree_runner.run("final", context={"answers": results})
+
+    print(tree_runner.all_messages_txt)
 
 if __name__ == "__main__":
     main()
-
