@@ -19,8 +19,8 @@ def upload_image(file_path):
 
 def Equipment_Inverter(file_id, **kwargs):
     G = nx.DiGraph(**kwargs)
-    #G.graph["api"] = ApiBase(model="gpt-4o")
-    G.graph["api"] = ApiBase(model="gpt-4.1-mini")
+    G.graph["api"] = ApiBase(model="gpt-4o")
+    #G.graph["api"] = ApiBase(model="gpt-4.1-mini")
 
     formatting_instructions = (
         "\n\nProvide only the selected option as your first sentence."
@@ -49,15 +49,8 @@ def Equipment_Inverter(file_id, **kwargs):
     G.add_node("intro_inverter_type",
         prompt=(
             f"I have provided you with a diagram (file ID: {file_id}). I want you to professionally analyze it and answer the following questions."
-            "Use only clear evidence from the diagram and do not make assumptions."
-            "Store your answers internally and provide them as a single JSON file at the end of the decision tree."
-            "What is the architecture type used for all inverters in this project?"
-            "Choose only one of the following options based on the ordinance text:"
-            "- String Inverter without DC-DC Converters"
-            "- String Inverter with DC-DC Converters"
-            "- Microinverters"
-            "- AC Modules"
-            + formatting_instructions
+            "What do you see in the diagram?" 
+            "Do you know which is the inverter brand and model?"
         )
     )
     G.add_node("micro_mfr1", prompt=(
@@ -66,34 +59,34 @@ def Equipment_Inverter(file_id, **kwargs):
         + '\n'.join(f"- {m}" for m in manufacturer_list_json)
         + formatting_instructions
     ))
-    G.add_node("micro_model1", prompt=(
-        "Inverter 1 Model Number.\nPlease state the full model number as listed on the diagram or specification."
-        + formatting_instructions
-    ))
-    G.add_node("micro_ocpd1", prompt=(
-        "What is the maximum overcurrent protection device (OCPD) rating allowed on Inverter 1 (Amps)?"
-        + formatting_instructions
-    ))
-    G.add_node("micro_interconnect1", prompt=(
-        "Where will Inverter 1 be interconnected to the premises wiring and utility power?\n"
-        "Select one of the following options:\n"
-        "- Main Service Panel\n"
-        "- Service Feeders\n"
-        "- Backup Loads Panel"
-        + formatting_instructions
-    ))
-    G.add_node("final", prompt=(
-        "Here are the answers collected so far:\n"
-        "{answers}\n\n"
-        "Reformat them as a single JSON object."
-        + formatting_instructions
-    ))
+    # G.add_node("micro_model1", prompt=(
+    #     "Inverter 1 Model Number.\nPlease state the full model number as listed on the diagram or specification."
+    #     + formatting_instructions
+    # ))
+    # G.add_node("micro_ocpd1", prompt=(
+    #     "What is the maximum overcurrent protection device (OCPD) rating allowed on Inverter 1 (Amps)?"
+    #     + formatting_instructions
+    # ))
+    # G.add_node("micro_interconnect1", prompt=(
+    #     "Where will Inverter 1 be interconnected to the premises wiring and utility power?\n"
+    #     "Select one of the following options:\n"
+    #     "- Main Service Panel\n"
+    #     "- Service Feeders\n"
+    #     "- Backup Loads Panel"
+    #     + formatting_instructions
+    # ))
+    # G.add_node("final", prompt=(
+    #     "Here are the answers collected so far:\n"
+    #     "{answers}\n\n"
+    #     "Reformat them as a single JSON object."
+    #     + formatting_instructions
+    # ))
 
-    G.add_edge("intro_inverter_type", "micro_mfr1", condition=lambda x: x.strip().lower().startswith("microinverters"))
-    G.add_edge("micro_mfr1", "micro_model1")
-    G.add_edge("micro_model1", "micro_ocpd1")
-    G.add_edge("micro_ocpd1", "micro_interconnect1")
-    G.add_edge("micro_interconnect1", "final")
+    # G.add_edge("intro_inverter_type", "micro_mfr1", condition=lambda x: x.strip().lower().startswith("microinverters"))
+    # G.add_edge("micro_mfr1", "micro_model1")
+    # G.add_edge("micro_model1", "micro_ocpd1")
+    # G.add_edge("micro_ocpd1", "micro_interconnect1")
+    # G.add_edge("micro_interconnect1", "final")
 
     return G
 
