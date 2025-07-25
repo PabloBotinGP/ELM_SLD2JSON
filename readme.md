@@ -21,4 +21,6 @@ Index of files:
     - file_upload.py
         Uploads a file to OpenAI Files and prints out its ID for later calling.
 
-    - 
+
+Useful sources: 
+    - About how to upload files to OpenAI: https://platform.openai.com/docs/guides/images-vision?api-mode=responses&format=file#giving-a-model-images-as-input
