@@ -21,6 +21,12 @@ Index of files:
     - file_upload.py
         Uploads a file to OpenAI Files and prints out its ID for later calling.
 
+    - API_AnalyzeFile_noELM.py
+        Send a file to the model see if it is able to open and analyze it. 
+        For now, I was able to open and analyze it on a single interaction, but the other interactions lost track of the conversation. 
+        Need to link the interactions into the same conversation, WIP. 
+
 
 Useful sources: 
-    - About how to upload files to OpenAI: https://platform.openai.com/docs/guides/images-vision?api-mode=responses&format=file#giving-a-model-images-as-input
+    - About OpenAI's Images and Vision: https://platform.openai.com/docs/guides/images-vision?api-mode=responses
+    - 
