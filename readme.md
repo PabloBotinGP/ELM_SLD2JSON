@@ -18,15 +18,15 @@ Index of files:
             - Try another way to upload the file
             - Try another way to call the file
 
-    - file_upload.py
-        Uploads a file to OpenAI Files and prints out its ID for later calling.
+    - simple_tree_noELM.py
+        Super simplified decision tree (3 branches, 2 of them are cut). 
+        Send a file to the model see if it is able to open and analyze it. Works! 
+        Based on the answer to the first question, it goes into severla more questions of its branch. Works accurately!  
+        Initially, I was able to open and analyze it on a single interaction, but the other interactions lost track of the conversation. 
+        Found the way to link interactions but it carries all the prompt from previous ones (including the image), which is token intensive. 
+        For future development, think about the way to use the less number of tokens yet making it as accurate as it can be. 
 
-    - API_AnalyzeFile_noELM.py
-        Send a file to the model see if it is able to open and analyze it. 
-        For now, I was able to open and analyze it on a single interaction, but the other interactions lost track of the conversation. 
-        Need to link the interactions into the same conversation, WIP. 
 
 
 Useful sources: 
     - About OpenAI's Images and Vision: https://platform.openai.com/docs/guides/images-vision?api-mode=responses
-    - 
